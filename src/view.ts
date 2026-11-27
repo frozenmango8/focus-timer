@@ -26,6 +26,7 @@ export interface Handlers {
   onAddTask: (title: string) => void;
   onSelectTask: (id: string | null) => void;
   onRemoveTask: (id: string) => void;
+  onNotify: (enabled: boolean) => void;
 }
 
 export interface View {
@@ -35,6 +36,7 @@ export interface View {
   paintTasks: (rows: TaskRow[]) => void;
   paintHistory: (days: HistoryDay[], todaySpent: string) => void;
   setTaskHint: (text: string) => void;
+  setNotifyHint: (text: string) => void;
   announce: (text: string) => void;
   clearTaskTitle: () => void;
 }
@@ -57,6 +59,8 @@ export function createView(root: HTMLElement, handlers: Handlers): View {
   const taskTitle = byId<HTMLInputElement>(root, "task-title");
   const taskList = byId<HTMLUListElement>(root, "tasks");
   const taskHint = byId<HTMLElement>(root, "task-hint");
+  const notify = byId<HTMLInputElement>(root, "notify");
+  const notifyHint = byId<HTMLElement>(root, "notify-hint");
   const todayTotal = byId<HTMLElement>(root, "today-total");
   const chart = byId<HTMLElement>(root, "chart");
   const weekBody = byId<HTMLElement>(root, "week-body");
@@ -75,6 +79,7 @@ export function createView(root: HTMLElement, handlers: Handlers): View {
   bindDuration(shortMin, "shortBreakMin");
   bindDuration(longMin, "longBreakMin");
   bindDuration(cycleLength, "sessionsBeforeLongBreak");
+  notify.addEventListener("change", () => handlers.onNotify(notify.checked));
 
   taskForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -115,6 +120,7 @@ export function createView(root: HTMLElement, handlers: Handlers): View {
       setNumber(longMin, settings.longBreakMin);
       setNumber(cycleLength, settings.sessionsBeforeLongBreak);
       if (theme.value !== nextTheme) theme.value = nextTheme;
+      notify.checked = settings.notify;
     },
     paintTasks(rows) {
       const focusKey = focusedKey(taskList);
@@ -146,6 +152,9 @@ export function createView(root: HTMLElement, handlers: Handlers): View {
     setTaskHint(text) {
       taskHint.textContent = text;
     },
+    setNotifyHint(text) {
+      notifyHint.textContent = text;
+    },
     announce(text) {
       live.textContent = "";
       window.setTimeout(() => {
@@ -157,7 +166,10 @@ export function createView(root: HTMLElement, handlers: Handlers): View {
     },
   };
 
-  function bindDuration(input: HTMLInputElement, key: keyof Settings) {
+  function bindDuration(
+    input: HTMLInputElement,
+    key: "focusMin" | "shortBreakMin" | "longBreakMin" | "sessionsBeforeLongBreak",
+  ) {
     input.addEventListener("change", () => {
       handlers.onDurations({ [key]: input.valueAsNumber });
     });
@@ -213,6 +225,11 @@ function markup(): string {
             <span class="entry"><input id="cycle-length" type="number" min="1" max="12" step="1" inputmode="numeric" autocomplete="off" value="4"><span>focus sessions</span></span>
           </label>
         </div>
+        <label class="check">
+          <input id="notify" type="checkbox">
+          Notify when a phase ends
+        </label>
+        <p class="note" id="notify-hint" role="status"></p>
         <p class="sr" id="live" aria-live="polite"></p>
       </section>
       <div class="side">

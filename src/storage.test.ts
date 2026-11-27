@@ -24,6 +24,7 @@ describe("storage", () => {
     const snapshot = parseSnapshot(raw);
     expect(snapshot?.theme).toBe("dark");
     expect(snapshot?.settings.focusMin).toBe(50);
+    expect(snapshot?.settings.notify).toBe(false);
     expect(snapshot?.timer).toMatchObject({ status: "running", endsAt: 1_700_000_000_000, completedInCycle: 2 });
     expect(snapshot?.tasks).toEqual([{ id: "write", title: "Draft notes", createdAt: 10 }]);
     expect(snapshot?.currentTaskId).toBeNull();

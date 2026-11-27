@@ -5,6 +5,7 @@ export interface Settings {
   shortBreakMin: number;
   longBreakMin: number;
   sessionsBeforeLongBreak: number;
+  notify: boolean;
 }
 
 export type Theme = "system" | "light" | "dark";
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
   shortBreakMin: 5,
   longBreakMin: 15,
   sessionsBeforeLongBreak: 4,
+  notify: false,
 };
 
 const LIMITS = {
@@ -38,7 +40,7 @@ export function cleanSettings(value: Settings): Settings | null {
   if (!valid(value.shortBreakMin, LIMITS.shortBreakMin)) return null;
   if (!valid(value.longBreakMin, LIMITS.longBreakMin)) return null;
   if (!valid(value.sessionsBeforeLongBreak, LIMITS.sessionsBeforeLongBreak)) return null;
-  return { ...value };
+  return { ...value, notify: value.notify === true };
 }
 
 export function settingsFromUnknown(value: unknown): Settings {
@@ -52,6 +54,7 @@ export function settingsFromUnknown(value: unknown): Settings {
       LIMITS.sessionsBeforeLongBreak,
       DEFAULT_SETTINGS.sessionsBeforeLongBreak,
     ),
+    notify: record.notify === true,
   };
 }
 

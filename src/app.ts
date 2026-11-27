@@ -1,3 +1,4 @@
+import { playChime, primeAudio } from "./audio";
 import {
   countByTask,
   dayLabel,
@@ -15,6 +16,7 @@ import {
   type Settings,
   type Theme,
 } from "./settings";
+import { allowNotifications, notificationsGranted, notificationsSupported, sendNotice } from "./notify";
 import { loadSnapshot, saveSnapshot, TASK_LIMIT, type Snapshot, type Task } from "./storage";
 import {
   applyDurations,
@@ -41,6 +43,8 @@ export function mount(root: HTMLElement, storage: Storage = localStorage): void 
   let sessions: FocusSession[] = saved?.sessions ?? [];
   let intervalId = 0;
   let timeoutId = 0;
+  let notifyRequest = 0;
+  let chimeWhenVisible = false;
 
   const view = createView(root, {
     onToggle: viewToggle,
@@ -89,21 +93,28 @@ export function mount(root: HTMLElement, storage: Storage = localStorage): void 
       paintTasks();
       persist();
     },
+    onNotify(enabled) {
+      void setNotify(enabled);
+    },
   });
 
   applyTheme(theme);
+  const notifyHint = reconcileNotify();
   const caughtUp = completeIfDue(timer, Date.now(), durationsOf(settings));
   if (caughtUp.done) {
     timer = caughtUp.state;
     record(caughtUp.done);
   }
   paintAll();
-  if (caughtUp.done) {
-    view.announce(completionText(caughtUp.done, timer));
+  if (notifyHint) {
+    view.setNotifyHint(notifyHint);
     persist();
   }
+  if (caughtUp.done) signal(caughtUp.done);
 
   arm();
+  window.addEventListener("pointerdown", () => primeAudio());
+  window.addEventListener("keydown", () => primeAudio());
   window.addEventListener("keydown", onKey);
   document.addEventListener("visibilitychange", onVisibility);
   window.addEventListener("pagehide", persist);
@@ -118,9 +129,7 @@ export function mount(root: HTMLElement, storage: Storage = localStorage): void 
     timer = result.state;
     record(result.done);
     paintAll();
-    view.announce(completionText(result.done, timer));
-    persist();
-    arm();
+    signal(result.done);
     return true;
   }
 
@@ -229,12 +238,71 @@ export function mount(root: HTMLElement, storage: Storage = localStorage): void 
       return;
     }
     onReturn();
+    if (chimeWhenVisible) {
+      chimeWhenVisible = false;
+      playChime();
+    }
+  }
+
+  function signal(done: Completion) {
+    view.announce(completionText(done, timer));
+    try {
+      // A hidden tab often cannot play audio until it is visible again.
+      if (document.visibilityState === "visible") playChime();
+      else chimeWhenVisible = true;
+      if (settings.notify) {
+        const note = noticeCopy(done, timer);
+        sendNotice(note.title, note.body);
+      }
+    } finally {
+      persist();
+      arm();
+    }
+  }
+
+  async function setNotify(enabled: boolean) {
+    const request = ++notifyRequest;
+    if (!enabled) {
+      settings = { ...settings, notify: false };
+      view.setNotifyHint("");
+      persist();
+      return;
+    }
+    if (!notificationsSupported()) {
+      settings = { ...settings, notify: false };
+      view.paintSettings(settings, theme);
+      view.setNotifyHint("This browser doesn't support notifications.");
+      persist();
+      return;
+    }
+    const allowed = await allowNotifications();
+    if (request !== notifyRequest) return;
+    settings = { ...settings, notify: allowed };
+    view.paintSettings(settings, theme);
+    view.setNotifyHint(allowed ? "" : "Notifications are blocked for this site.");
+    persist();
+  }
+
+  function reconcileNotify(): string {
+    if (!settings.notify) return "";
+    if (!notificationsSupported()) {
+      settings = { ...settings, notify: false };
+      return "This browser doesn't support notifications.";
+    }
+    if (!notificationsGranted()) {
+      settings = { ...settings, notify: false };
+      return Notification.permission === "denied"
+        ? "Notifications are blocked for this site."
+        : "Turn notifications on again to allow them.";
+    }
+    return "";
   }
 
   function onKey(event: KeyboardEvent) {
     if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
     if (isTextField(event.target)) return;
     if (event.key === " " || event.code === "Space") {
+      if (isCheckable(event.target)) return;
       event.preventDefault();
       viewToggle();
       return;
@@ -272,6 +340,17 @@ export function mount(root: HTMLElement, storage: Storage = localStorage): void 
   }
 }
 
+function noticeCopy(done: Completion, next: TimerState): { title: string; body: string } {
+  if (done.phase === "focus") {
+    return {
+      title: "Focus complete",
+      body: next.phase === "longBreak" ? "Time for a long break." : "Time for a short break.",
+    };
+  }
+  if (done.phase === "shortBreak") return { title: "Break over", body: "Ready for the next focus." };
+  return { title: "Long break over", body: "Ready for the next focus." };
+}
+
 function completionText(done: Completion, next: TimerState): string {
   if (done.phase === "focus") {
     return next.phase === "longBreak" ? "Focus complete. Long break." : "Focus complete. Short break.";
@@ -287,6 +366,10 @@ function applyTheme(theme: Theme) {
     (theme !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   // Keep in step with the background tokens in style.css.
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#191816" : "#f3f0e8");
+}
+
+function isCheckable(target: EventTarget | null): boolean {
+  return target instanceof HTMLInputElement && (target.type === "checkbox" || target.type === "radio");
 }
 
 function isTextField(target: EventTarget | null): boolean {

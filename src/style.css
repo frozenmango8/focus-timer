@@ -292,6 +292,19 @@ input[type="text"] {
   flex-basis: 100%;
 }
 
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.95rem;
+}
+
+.check input {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--accent);
+}
+
 .side {
   display: flex;
   flex-direction: column;
