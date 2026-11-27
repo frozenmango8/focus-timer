@@ -1,8 +1,509 @@
-:root {
+/* Background colors are also set on the theme-color meta in index.html. */
+
+:root,
+:root[data-theme="light"] {
   color-scheme: light;
+  --bg: #f3f0e8;
+  --ink: #1c1915;
+  --muted: #5a5348;
+  --line: #ddd6c8;
+  --accent: #1b5e45;
+  --accent-ink: #f4f1e8;
+  --accent-hover: #154a36;
+  --bar: #6f675c;
+  --track: #e3dcd0;
+  --input: #fffcf7;
+  --hover: #e7e1d6;
+  --select: #d9e2d4;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #191816;
+  --ink: #f3efe6;
+  --muted: #b7b0a4;
+  --line: #3a362f;
+  --accent: #8fceae;
+  --accent-ink: #13261c;
+  --accent-hover: #a8dcc2;
+  --bar: #857c70;
+  --track: #2e2b26;
+  --input: #221f1c;
+  --hover: #2a2723;
+  --select: #2c4036;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    color-scheme: dark;
+    --bg: #191816;
+    --ink: #f3efe6;
+    --muted: #b7b0a4;
+    --line: #3a362f;
+    --accent: #8fceae;
+    --accent-ink: #13261c;
+    --accent-hover: #a8dcc2;
+    --bar: #857c70;
+    --track: #2e2b26;
+    --input: #221f1c;
+    --hover: #2a2723;
+    --select: #2c4036;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: Georgia, serif;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Public Sans", "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  font-synthesis: none;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  min-height: 2.75rem;
+  padding: 0.35rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+button:hover {
+  background: var(--hover);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button.primary {
+  min-width: 6.25rem;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+button.primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+button.quiet {
+  min-height: 2.25rem;
+  padding: 0.15rem 0.15rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+button.quiet:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+input[type="number"],
+input[type="text"],
+select {
+  min-height: 2.5rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--input);
+}
+
+input[type="number"] {
+  width: 4.25rem;
+}
+
+input[type="text"] {
+  min-width: 0;
+}
+
+::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--select);
+  color: var(--ink);
+}
+
+.layout {
+  width: min(56rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mark {
+  font-family: Newsreader, "Iowan Old Style", Palatino, Georgia, serif;
+  font-weight: 500;
+  font-size: 1.7rem;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.mark span {
+  font-family: "Public Sans", "Segoe UI", sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.theme {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.phase-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.phase {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.cycle {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.time {
+  margin-top: 0.15rem;
+  font-family: Newsreader, "Iowan Old Style", Palatino, Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(3.4rem, 18vw, 7.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+  white-space: nowrap;
+}
+
+.track {
+  margin-top: 1.15rem;
+  height: 3px;
+  background: var(--track);
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
+}
+
+.keys,
+.lede,
+.note {
+  color: var(--muted);
+}
+
+.keys {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.75rem;
+  margin-top: 1.75rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+}
+
+.span {
+  flex-basis: 100%;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  min-width: 0;
+}
+
+.side h2 {
+  margin-bottom: 0.55rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.lede {
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+}
+
+.add {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.add input {
+  flex: 1;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.choice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+.count {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+.empty {
+  padding: 0.35rem 0;
+  color: var(--muted);
+}
+
+.note {
+  font-size: 0.875rem;
+}
+
+.note:empty {
+  display: none;
+}
+
+.today {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  color: var(--muted);
+}
+
+.today strong {
+  font-family: Newsreader, "Iowan Old Style", Palatino, Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.side h3 {
+  margin-top: 1.15rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.plot {
+  width: 100%;
+  height: 5.75rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.level {
+  width: min(1.35rem, 78%);
+  background: var(--bar);
+  transition: height 180ms ease-out;
+}
+
+.col[data-today] .level {
+  background: var(--accent);
+}
+
+.wd {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.col[data-today] .wd {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.noscript {
+  width: min(40rem, calc(100% - 2rem));
+  margin: 2rem auto;
+}
+
+@media (max-width: 640px) {
+  .settings {
+    gap: 0.85rem 1.25rem;
+  }
+}
+
+@media (min-width: 840px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.75fr);
+    column-gap: 3.25rem;
+    row-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .top {
+    grid-column: 1 / -1;
+  }
+
+  .timer {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  .side {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  button:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .track span,
+  .level {
+    background: CanvasText;
+  }
+
+  button.primary {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
 }
