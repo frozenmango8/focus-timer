@@ -23,6 +23,7 @@ export function sendNotice(title: string, body: string): void {
       body,
       tag: "focus-timer",
       silent: document.visibilityState === "visible",
+      icon: new URL("icon-192.png", document.baseURI).href,
     });
     notice.onclick = () => {
       window.focus();
