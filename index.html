@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A pomodoro timer with tasks and a week of history.">
+    <meta name="theme-color" content="#f3f0e8">
+    <title>Focus Timer</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <script>
+      (function () {
+        var theme = "system";
+        try {
+          var saved = JSON.parse(localStorage.getItem("focus-timer") || "null");
+          if (saved && (saved.theme === "light" || saved.theme === "dark" || saved.theme === "system")) {
+            theme = saved.theme;
+          }
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme;
+        var dark = theme === "dark" || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", dark ? "#191816" : "#f3f0e8");
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript><p class="noscript">Focus Timer needs JavaScript.</p></noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
